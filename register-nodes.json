@@ -1,0 +1,53 @@
+[
+  {
+    "id": "172.17.42.156",
+    "kind": "Minion",
+    "apiVersion": "v1beta1",
+    "resources": {
+      "capacity": {
+        "cpu": 1000,
+        "memory": 3073741824
+      }
+    },
+    "labels": {
+      "ip": "172.17.42.156",
+      "name": "qa-node-1",
+      "tier": "qa",
+      "service": "app"
+    }
+  },
+  {
+    "id": "172.17.42.157",
+    "kind": "Minion",
+    "apiVersion": "v1beta1",
+    "resources": {
+      "capacity": {
+        "cpu": 1000,
+        "memory": 3073741824
+      }
+    },
+    "labels": {
+      "ip": "172.17.42.157",
+      "name": "qa-node-2",
+      "tier": "qa",
+      "service": "app"
+    }
+  },
+  {
+    "id": "172.17.42.155",
+    "kind": "Minion",
+    "apiVersion": "v1beta1",
+    "resources": {
+      "capacity": {
+        "cpu": 1000,
+        "memory": 3073741824
+      }
+    },
+    "labels": {
+      "ip": "172.17.42.155",
+      "name": "qa-node-3",
+      "tier": "qa",
+      "service": "app"
+    }
+  }
+]
