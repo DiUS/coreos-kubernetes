@@ -1,0 +1,50 @@
+{
+  "apiVersion": "v1beta3",
+  "kind": "ReplicationController",
+  "metadata": {
+    "labels": {
+      "name": "kibana-logging",
+      "kubernetes.io/cluster-service": "true"
+    },
+    "name": "kibana-logging"
+  },
+  "spec": {
+    "replicas": 1,
+    "selector": {
+      "name": "kibana-logging"
+    },
+    "template": {
+      "metadata": {
+        "labels": {
+          "kubernetes.io/cluster-service": "true",
+          "name": "kibana-logging"
+        }
+      },
+      "spec": {
+        "containers": [
+          {
+            "env": [
+              {
+                "name": "ES_SCHEME",
+                "value": "https"
+              },
+              {
+                "name": "ES_HOST",
+                "value": "\"+window.location.hostname+\"/api/v1beta3/proxy/namespaces/default/services/elasticsearch-logging"
+              }
+            ],
+            "image": "gcr.io/google_containers/kibana:1.2",
+            "name": "kibana-logging",
+            "ports": [
+              {
+                "containerPort": 80,
+                "name": "kibana-port",
+                "protocol": "TCP"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}
