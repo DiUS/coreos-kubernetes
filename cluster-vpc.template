@@ -1,0 +1,175 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Configurations for VPC, security groups, networking, etc.",
+  "Parameters": {
+    "AdminIP": {
+      "Description": "The CIDR block that SSH and Kubernetes management is available to.",
+      "Default": "0.0.0.0/0",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "ClusterSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "SecurityGroup for the cluster.",
+        "VpcId": {"Ref": "ClusterVPC"},
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Cluster Security Group"
+          }
+        ]
+      }
+    },
+    "ClusterSecurityGroupSSH": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "tcp",
+        "FromPort": "22",
+        "ToPort": "22",
+        "CidrIp": {"Ref": "AdminIP"}
+      }
+    },
+    "ClusterSecurityGroupHTTP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "tcp",
+        "FromPort": "80",
+        "ToPort": "80",
+        "CidrIp": {"Ref": "AdminIP"}
+      }
+    },
+    "ClusterSecurityGroupHTTPS": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "tcp",
+        "FromPort": "443",
+        "ToPort": "443",
+        "CidrIp": {"Ref": "AdminIP"}
+      }
+    },
+    "ClusterSecurityGroupKubernetesMaster": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "tcp",
+        "FromPort": "6443",
+        "ToPort": "6443",
+        "CidrIp": {"Ref": "AdminIP"}
+      }
+    },
+    "ClusterSecurityGroupInternalCommunication": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "tcp",
+        "FromPort": "1",
+        "ToPort": "65535",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ClusterSecurityGroup",
+            "GroupId"
+          ]
+        }
+      }
+    },
+    "ClusterSecurityGroupFlannelUDP": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {"Ref": "ClusterSecurityGroup"},
+        "IpProtocol": "udp",
+        "FromPort": "8285",
+        "ToPort": "8285",
+        "SourceSecurityGroupId": {
+          "Fn::GetAtt": [
+            "ClusterSecurityGroup",
+            "GroupId"
+          ]
+        }
+      }
+    },
+    "ClusterVPC": {
+      "Type": "AWS::EC2::VPC",
+      "Properties": {
+        "CidrBlock": "172.17.42.0/23",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": "Cluster VPC"
+          }
+        ]
+      }
+    },
+    "ClusterInternetGateway": {
+      "Type": "AWS::EC2::InternetGateway"
+    },
+    "ClusterVPCGatewayAttachment": {
+      "Type": "AWS::EC2::VPCGatewayAttachment",
+      "Properties": {
+        "InternetGatewayId": {"Ref": "ClusterInternetGateway"},
+        "VpcId": {"Ref": "ClusterVPC"}
+      }
+    },
+    "AccessIP": {
+      "Type": "AWS::EC2::EIP",
+      "Properties": {
+        "Domain": "vpc"
+      },
+      "DependsOn": "ClusterVPC"
+    },
+    "RouteTable": {
+      "Type": "AWS::EC2::RouteTable",
+      "Properties": {
+        "VpcId": {"Ref": "ClusterVPC"}
+      }
+    },
+    "Route": {
+      "Type": "AWS::EC2::Route",
+      "DependsOn": "ClusterVPCGatewayAttachment",
+      "Properties": {
+        "RouteTableId": {"Ref": "RouteTable"},
+        "DestinationCidrBlock": "0.0.0.0/0",
+        "GatewayId": {"Ref": "ClusterInternetGateway"}
+      }
+    },
+    "ClusterSubnetA": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-2a",
+        "CidrBlock": "172.17.42.0/24",
+        "VpcId": {"Ref": "ClusterVPC"}
+      }
+    },
+    "ClusterSubnetB": {
+      "Type": "AWS::EC2::Subnet",
+      "Properties": {
+        "AvailabilityZone": "ap-southeast-2b",
+        "CidrBlock": "172.17.43.0/24",
+        "VpcId": {"Ref": "ClusterVPC"}
+      }
+    },
+    "SubnetARouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "ClusterSubnetA"},
+        "RouteTableId": {"Ref": "RouteTable"}
+      }
+    },
+    "SubnetBRouteTableAssociation": {
+      "Type": "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties": {
+        "SubnetId": {"Ref": "ClusterSubnetB"},
+        "RouteTableId": {"Ref": "RouteTable"}
+      }
+    }
+  },
+  "Outputs": {
+    "AccessIP": {
+      "Value": {"Ref": "AccessIP"}
+    }
+  }
+}
