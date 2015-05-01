@@ -373,6 +373,7 @@
           "        --address=0.0.0.0 \\\n",
           "        --port=10250 \\\n",
           "        --hostname_override=$private_ipv4 \\\n",
+          "        --config=/etc/kubernetes/manifests \\\n",
           "        --api_servers=", {"Fn::GetAtt" :["KubernetesMasterInstance" , "PrivateIp"]}, ":8080 \\\n",
           "        --logtostderr=true\n",
           "        Restart=always\n",
