@@ -353,6 +353,7 @@
           "        --port=10250 \\\n",
           "        --hostname_override=$private_ipv4 \\\n",
           "        --api_servers=", {"Fn::GetAtt" :["KubernetesMasterInstance" , "PrivateIp"]}, ":8080 \\\n",
+          "        --config=/etc/kubernetes/manifests \\\n",
           "        --allow_privileged=true \\\n",
           "        --logtostderr=true \\\n",
           "        --healthz_bind_address=0.0.0.0 \\\n",
